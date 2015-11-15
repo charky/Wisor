@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory
+        android:key="pref_key_server_settings"
+        android:title="@string/pref_server_title">
+        <EditTextPreference
+            android:defaultValue="@string/pref_server_name_default"
+            android:inputType="text"
+            android:key="pref_key_server_name"
+            android:singleLine="true"
+            android:title="@string/pref_server_name"/>
+        <EditTextPreference
+            android:defaultValue="@string/pref_server_port_default"
+            android:inputType="number"
+            android:key="pref_key_server_port"
+            android:maxLength="5"
+            android:singleLine="true"
+            android:title="@string/pref_server_port"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_key_ws_settings"
+        android:title="@string/pref_ws_title">
+        <EditTextPreference
+            android:defaultValue="@string/pref_ws1_name_default"
+            android:inputType="text"
+            android:key="pref_key_ws1_name"
+            android:singleLine="true"
+            android:title="@string/pref_ws1_name"/>
+        <EditTextPreference
+            android:defaultValue="@string/pref_ws2_name_default"
+            android:inputType="text"
+            android:key="pref_key_ws2_name"
+            android:singleLine="true"
+            android:title="@string/pref_ws2_name"/>
+        <EditTextPreference
+            android:defaultValue="@string/pref_ws3_name_default"
+            android:inputType="text"
+            android:key="pref_key_ws3_name"
+            android:singleLine="true"
+            android:title="@string/pref_ws3_name"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
