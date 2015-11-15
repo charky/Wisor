@@ -5,11 +5,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.speech.RecognizerIntent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,8 +23,13 @@ import com.enterprise.charky.wisor.util.HttpPostSender;
 import com.enterprise.charky.wisor.util.JsonRPC;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener{
+public class MainActivity extends AppCompatActivity implements CompoundButton
+        .OnCheckedChangeListener, View.OnClickListener{
+
+    //Finals
+    private static final int VOICE_RECOGNITION_REQUEST_CODE = 6001;
 
     //J-Objects
     private Handler handler;
@@ -47,14 +54,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
 
         //Init Objects
@@ -121,10 +120,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        // Get Values
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String iAddress = "http://" + sharedPref.getString("pref_key_server_name", "") + ":"
-                + sharedPref.getString("pref_key_server_port", "") + "/jsonrpc";
         int wsID = 1;
         int tvID = R.id.tv_status_ws1;
         switch (buttonView.getId()) {
@@ -137,13 +132,47 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 tvID = R.id.tv_status_ws3;
                 break;
         }
-        //Prepare JsonRPC
-        jsonRPC.setWSParams(wsID, isChecked);
-        try {
-            httpPostSender.createConnect(iAddress);
-            httpPostSender.sendPostData(jsonRPC, tvID);
-        } catch (IOException e) {
-            e.printStackTrace();
+        sendJSONRPC(wsID, isChecked, tvID);
+    }
+
+    @Override
+    public void onClick(View v) {
+        startVoiceRecognitionActivity();
+        Snackbar.make(v, "Start Voice Recognition. Say your Commando.", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+    }
+
+    @Override
+    protected
+    void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == VOICE_RECOGNITION_REQUEST_CODE
+                && resultCode == RESULT_OK) {
+            ArrayList<String> matches = data
+                    .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+            String listString = "";
+            String wordStr;
+            String[] words;
+            for (String s : matches)
+            {
+                listString += s + "\t";
+                wordStr = matches.get(0);
+                words = wordStr.split(" ");
+                if (words.length > 1 && words[0].equals("Licht")) {
+                    if(words[1].equals("an")) {
+                        sendJSONRPC(3, true, R.id.tv_status_ws3);
+                        break;
+                    }else if(words[1].equals("aus")){
+                        sendJSONRPC(3, false, R.id.tv_status_ws3);
+                        break;
+                    }
+                }
+
+            }
+            Log.d("VoiceTest",listString);
+
+
+
         }
     }
 
@@ -155,9 +184,30 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         sw_ws2.setOnCheckedChangeListener(this);
         sw_ws3 = (Switch) findViewById(R.id.sw_ws3);
         sw_ws3.setOnCheckedChangeListener(this);
+
         //Lan Error TextViews
         tv_no_lan1 = (TextView) findViewById(R.id.tv_error_lan1);
         tv_no_lan2 = (TextView) findViewById(R.id.tv_error_lan2);
+
+        //FloatingActionButton
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(this);
+
+    }
+
+    private void sendJSONRPC(int wsID, boolean powerState, int tvID){
+        // Get Values
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String iAddress = "http://" + sharedPref.getString("pref_key_server_name", "") + ":"
+                + sharedPref.getString("pref_key_server_port", "") + "/jsonrpc";
+        //Prepare JsonRPC
+        jsonRPC.setWSParams(wsID, powerState);
+        try {
+            httpPostSender.createConnect(iAddress);
+            httpPostSender.sendPostData(jsonRPC, tvID);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setResponseStatus(boolean statusOK, int textViewID) {
@@ -171,6 +221,16 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             tv.setTextColor(ContextCompat.getColor(this,R.color.red));
         }
         handler.postDelayed(new HideStatusLabel(textViewID), 3000);
+    }
+
+    private void startVoiceRecognitionActivity() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getClass()
+                .getPackage().getName());
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 2);
+        startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
     }
 
     //Runnable
