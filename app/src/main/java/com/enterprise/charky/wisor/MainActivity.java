@@ -31,9 +31,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton
     //Finals
     private static final int VOICE_RECOGNITION_REQUEST_CODE = 6001;
 
-    //J-Objects
-    private Handler handler;
-
     //Utils
     private HttpPostSender httpPostSender;
     private JsonRPC jsonRPC;
@@ -54,17 +51,14 @@ public class MainActivity extends AppCompatActivity implements CompoundButton
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-
         //Init Objects
         httpPostSender = new HttpPostSender(this);
         jsonRPC = new JsonRPC();
-        handler = new Handler();
 
         //InitBindingsAndListeners
         initViewBindings();
 
-        //Init Settings
+        //Init Settings on first start
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
 
@@ -121,18 +115,15 @@ public class MainActivity extends AppCompatActivity implements CompoundButton
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         int wsID = 1;
-        int tvID = R.id.tv_status_ws1;
         switch (buttonView.getId()) {
             case R.id.sw_ws2:
                 wsID = 2;
-                tvID = R.id.tv_status_ws2;
                 break;
             case R.id.sw_ws3:
                 wsID = 3;
-                tvID = R.id.tv_status_ws3;
                 break;
         }
-        sendJSONRPC(wsID, isChecked, tvID);
+        sendJSONRPC(wsID, isChecked);
     }
 
     @Override
@@ -160,18 +151,16 @@ public class MainActivity extends AppCompatActivity implements CompoundButton
                 words = wordStr.split(" ");
                 if (words.length > 1 && words[0].equals("Licht")) {
                     if(words[1].equals("an")) {
-                        sendJSONRPC(3, true, R.id.tv_status_ws3);
+                        sendJSONRPC(3, true);
                         break;
                     }else if(words[1].equals("aus")){
-                        sendJSONRPC(3, false, R.id.tv_status_ws3);
+                        sendJSONRPC(3, false);
                         break;
                     }
                 }
 
             }
             Log.d("VoiceTest",listString);
-
-
 
         }
     }
@@ -195,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton
 
     }
 
-    private void sendJSONRPC(int wsID, boolean powerState, int tvID){
+    private void sendJSONRPC(int wsID, boolean powerState){
         // Get Values
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String iAddress = "http://" + sharedPref.getString("pref_key_server_name", "") + ":"
@@ -204,23 +193,28 @@ public class MainActivity extends AppCompatActivity implements CompoundButton
         jsonRPC.setWSParams(wsID, powerState);
         try {
             httpPostSender.createConnect(iAddress);
-            httpPostSender.sendPostData(jsonRPC, tvID);
+            httpPostSender.sendPostData(jsonRPC);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void setResponseStatus(boolean statusOK, int textViewID) {
-        TextView tv = (TextView) findViewById(textViewID);
+    public void setResponseStatus(boolean statusOK) {
+        View v = findViewById(R.id.root_RelativeLayout);
+
+        Snackbar sb = Snackbar.make(v, "ResponseStatusText Error", Snackbar.LENGTH_LONG)
+                .setAction("Action", null);
+        TextView textView = (TextView) sb.getView().findViewById(android.support.design.R.id.snackbar_text);
+
         //If ok set Green and OK
         if (statusOK) {
-            tv.setText(getResources().getString(R.string.response_status_ok));
-            tv.setTextColor(ContextCompat.getColor(this, R.color.green));
+            sb.setText(getResources().getString(R.string.response_status_ok));
+            textView.setTextColor(ContextCompat.getColor(this, R.color.green));
         } else {
-            tv.setText(getResources().getString(R.string.response_status_error));
-            tv.setTextColor(ContextCompat.getColor(this,R.color.red));
+            sb.setText(getResources().getString(R.string.response_status_error));
+            textView.setTextColor(ContextCompat.getColor(this,R.color.red));
         }
-        handler.postDelayed(new HideStatusLabel(textViewID), 3000);
+        sb.show();
     }
 
     private void startVoiceRecognitionActivity() {
@@ -233,18 +227,4 @@ public class MainActivity extends AppCompatActivity implements CompoundButton
         startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
     }
 
-    //Runnable
-    private class HideStatusLabel implements Runnable {
-
-        private int tvID = -1;
-
-        public HideStatusLabel(int tvID) {
-            this.tvID = tvID;
-        }
-
-        @Override
-        public void run() {
-            ((TextView) findViewById(tvID)).setText("");
-        }
-    }
 }

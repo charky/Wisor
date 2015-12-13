@@ -49,9 +49,9 @@ public class HttpPostSender {
 
     }
 
-    public void sendPostData(JsonRPC postData, int tvID) {
+    public void sendPostData(JsonRPC postData) {
         if(connectionCreated) {
-            SendPostDataAsync spdAsync = new SendPostDataAsync(tvID);
+            SendPostDataAsync spdAsync = new SendPostDataAsync();
             spdAsync.execute(postData.toString());
         }
     }
@@ -68,12 +68,6 @@ public class HttpPostSender {
 
     private class SendPostDataAsync extends AsyncTask<String, Void, Boolean> {
 
-        private int tvID = -1;
-
-        public SendPostDataAsync(int tvID) {
-            this.tvID = tvID;
-        }
-
         @Override
         protected Boolean doInBackground(String... postData) {
             //send Request
@@ -87,7 +81,7 @@ public class HttpPostSender {
                 writer.flush();
                 writer.close();
             } catch (IOException e) {
-                _mainMainActivity.setResponseStatus(false, tvID);
+                _mainMainActivity.setResponseStatus(false);
                 e.printStackTrace();
                 return false;
             }
@@ -96,21 +90,15 @@ public class HttpPostSender {
         @Override
         protected void onPostExecute(Boolean result) {
             if(result){
-                GetDataAsync gtAsync = new GetDataAsync(tvID);
+                GetDataAsync gtAsync = new GetDataAsync();
                 gtAsync.execute();
             } else {
-                _mainMainActivity.setResponseStatus(false, tvID);
+                _mainMainActivity.setResponseStatus(false);
             }
         }
     }
 
     private class GetDataAsync extends AsyncTask<Void, Void, String> {
-
-        private int tvID = -1;
-
-        public GetDataAsync(int tvID) {
-            this.tvID = tvID;
-        }
 
         @Override
         protected String doInBackground(Void... voids) {
@@ -135,19 +123,19 @@ public class HttpPostSender {
         @Override
         protected void onPostExecute(String jsonReturn) {
             if ("Error".equals(jsonReturn)) {
-                _mainMainActivity.setResponseStatus(false, tvID);
+                _mainMainActivity.setResponseStatus(false);
             } else {
                 Log.d("HttpPostSender", jsonReturn);
                 try {
                     JSONObject jsonObj = new JSONObject(jsonReturn);
                     String result = jsonObj.getString("result");
                     if ("OK".equals(result)) {
-                        _mainMainActivity.setResponseStatus(true, tvID);
+                        _mainMainActivity.setResponseStatus(true);
                     } else {
-                        _mainMainActivity.setResponseStatus(false, tvID);
+                        _mainMainActivity.setResponseStatus(false);
                     }
                 } catch (JSONException e) {
-                    _mainMainActivity.setResponseStatus(false, tvID);
+                    _mainMainActivity.setResponseStatus(false);
                 }
             }
         }

@@ -4,7 +4,7 @@
       tools:context=".MainActivity">
     <item android:id="@+id/action_settings"
           android:title="@string/action_settings"
-          android:icon="@android:drawable/ic_menu_preferences"
+          android:icon="@drawable/ic_settings_applications_white_48dp"
           android:orderInCategory="100"
           app:showAsAction="always"/>
 </menu>

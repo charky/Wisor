@@ -9,10 +9,10 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
+    android:id="@+id/root_RelativeLayout"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main"
     tools:context=".MainActivity">
-
 
 
     <LinearLayout
@@ -32,13 +32,6 @@
             android:switchPadding="10dp"
             android:text="@string/pref_ws1_name_default"/>
 
-        <TextView
-            android:id="@+id/tv_status_ws1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textAlignment="textEnd"/>
-
         <Switch
             android:id="@+id/sw_ws2"
             android:layout_width="match_parent"
@@ -48,13 +41,6 @@
             android:switchPadding="10dp"
             android:text="@string/pref_ws2_name_default"/>
 
-        <TextView
-            android:id="@+id/tv_status_ws2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textAlignment="textEnd"/>
-
         <Switch
             android:id="@+id/sw_ws3"
             android:layout_width="match_parent"
@@ -63,13 +49,6 @@
             android:switchMinWidth="100dp"
             android:switchPadding="10dp"
             android:text="@string/pref_ws3_name_default"/>
-
-        <TextView
-            android:id="@+id/tv_status_ws3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textAlignment="textEnd"/>
 
     </LinearLayout>
 
