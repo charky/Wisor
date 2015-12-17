@@ -4,11 +4,14 @@
     <string name="title_activity_settings">Settings</string>
 
     <!-- Messages to the User -->
-    <string name="response_status_ok">OK</string>
-    <string name="response_status_error">Error</string>
+    <string name="response_status_ok">#ws_name is now #ws_status</string>
+    <string name="response_status_error">An error occurred changing the #ws_name to #ws_status</string>
+    <string name="response_voice_error">The Voice command could not be interpreted.</string>
     <string name="warning_no_lan_title">No Network-Connection</string>
-    <string name="warning_no_lan_msg">Please enable your Network (wifi).\nThis App only
-        works when Network ist activated.</string>
+    <string name="warning_no_lan_msg">Please enable your Network (wifi).\nThis App only works when Network ist activated.</string>
+    <string name="info_voice_rec_start">Say the wireless socket and the action (on/off)</string>
+    <string name="info_ws_status_on">on</string>
+    <string name="info_ws_status_off">off</string>
 
     <!-- Buttons and Captions Names -->
     <string name="action_voice_recognition">Voice Recognition</string>

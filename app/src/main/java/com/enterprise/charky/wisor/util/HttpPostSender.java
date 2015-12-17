@@ -49,10 +49,10 @@ public class HttpPostSender {
 
     }
 
-    public void sendPostData(JsonRPC postData) {
+    public void sendWSCommand(WSCommand wsCommand) {
         if(connectionCreated) {
             SendPostDataAsync spdAsync = new SendPostDataAsync();
-            spdAsync.execute(postData.toString());
+            spdAsync.execute(wsCommand);
         }
     }
 
@@ -66,43 +66,46 @@ public class HttpPostSender {
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    private class SendPostDataAsync extends AsyncTask<String, Void, Boolean> {
+    private class SendPostDataAsync extends AsyncTask<WSCommand, Void, WSCommand> {
+
+
 
         @Override
-        protected Boolean doInBackground(String... postData) {
+        protected WSCommand doInBackground(WSCommand... wsCommand) {
             //send Request
+            WSCommand localWSC = wsCommand[0];
             try {
-                Log.d("HttpPostSender", postData[0]);
                 urlConnection.connect();
                 connectionCreated = false;
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(urlConnection
                         .getOutputStream()));
-                writer.write(postData[0]);
+                writer.write(localWSC.getJSONString());
                 writer.flush();
                 writer.close();
             } catch (IOException e) {
-                _mainMainActivity.setResponseStatus(false);
                 e.printStackTrace();
-                return false;
+                localWSC.sendingCommandSuccessful = false;
+                return localWSC;
             }
-            return true;
+            return localWSC;
         }
         @Override
-        protected void onPostExecute(Boolean result) {
-            if(result){
+        protected void onPostExecute(WSCommand wsCommand) {
+            if(wsCommand.sendingCommandSuccessful){
                 GetDataAsync gtAsync = new GetDataAsync();
-                gtAsync.execute();
+                gtAsync.execute(wsCommand);
             } else {
-                _mainMainActivity.setResponseStatus(false);
+                _mainMainActivity.setResponseStatus(wsCommand);
             }
         }
     }
 
-    private class GetDataAsync extends AsyncTask<Void, Void, String> {
+    private class GetDataAsync extends AsyncTask<WSCommand, Void, WSCommand> {
 
         @Override
-        protected String doInBackground(Void... voids) {
+        protected WSCommand doInBackground(WSCommand... wsCommand) {
             //get Response
+            WSCommand localWSC = wsCommand[0];
             StringBuilder sb = new StringBuilder();
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection
@@ -113,31 +116,18 @@ public class HttpPostSender {
                 }
                 reader.close();
                 urlConnection.disconnect();
-                return sb.toString();
+                localWSC.jsonReturnMessage = sb.toString();
+                return localWSC;
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return "Error";
+            localWSC.jsonReturnMessage = "Error";
+            return localWSC;
         }
 
         @Override
-        protected void onPostExecute(String jsonReturn) {
-            if ("Error".equals(jsonReturn)) {
-                _mainMainActivity.setResponseStatus(false);
-            } else {
-                Log.d("HttpPostSender", jsonReturn);
-                try {
-                    JSONObject jsonObj = new JSONObject(jsonReturn);
-                    String result = jsonObj.getString("result");
-                    if ("OK".equals(result)) {
-                        _mainMainActivity.setResponseStatus(true);
-                    } else {
-                        _mainMainActivity.setResponseStatus(false);
-                    }
-                } catch (JSONException e) {
-                    _mainMainActivity.setResponseStatus(false);
-                }
-            }
+        protected void onPostExecute(WSCommand wsCommand) {
+            _mainMainActivity.setResponseStatus(wsCommand);
         }
     }
 }

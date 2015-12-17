@@ -17,24 +17,36 @@ import org.json.JSONObject;
  */
 public class JsonRPC extends JSONObject {
 
+    private static JsonRPC singleton;
     private JSONObject paramsObj;
 
-    public JsonRPC(){
+    public static String getWSCommandString(WSCommand wsCommand){
+        initSingleton();
+        singleton.setWSParams(wsCommand);
+        return singleton.toString();
+    }
+
+    private static void initSingleton(){
+        if(singleton == null){
+            singleton = new JsonRPC();
+        }
+    }
+
+    private JsonRPC(){
         super();
         initBasicStructure();
     }
 
-    public void setWSParams(int wsID, boolean powerState){
+    private void setWSParams(WSCommand wsCommand){
         try {
-            paramsObj.put("wsID", ""+wsID);
-            paramsObj.put("powerState", (powerState)?"1":"0");
+            paramsObj.put("wsID", ""+wsCommand.wsID);
+            paramsObj.put("powerState", (wsCommand.powerState)?"1":"0");
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
     private void initBasicStructure(){
-
         try {
             // Parameter Corpus
             paramsObj = new JSONObject();

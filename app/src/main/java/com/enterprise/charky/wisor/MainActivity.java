@@ -13,17 +13,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.enterprise.charky.wisor.util.HttpPostSender;
-import com.enterprise.charky.wisor.util.JsonRPC;
 import com.enterprise.charky.wisor.util.MissingNetworkDialogFragment;
 import com.enterprise.charky.wisor.util.SwitchAdapter;
+import com.enterprise.charky.wisor.util.VoiceResultInterpreter;
+import com.enterprise.charky.wisor.util.WSCommand;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,18 +36,15 @@ public class MainActivity extends AppCompatActivity implements
     private static final int VOICE_RECOGNITION_REQUEST_CODE = 6001;
 
     //Data
-    String[] SwitchCaptionsNames;
+    private String[] SwitchCaptionsNames;
 
     //Utils
     private HttpPostSender httpPostSender;
-    private JsonRPC jsonRPC;
+    private VoiceResultInterpreter voiceResultInterpreter;
 
     //Android
     private SwitchAdapter switchAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
-
-    //Views
-    private RecyclerView mRecyclerView;
+    private Intent voiceRecognitionIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +57,14 @@ public class MainActivity extends AppCompatActivity implements
 
         //Init Objects
         httpPostSender = new HttpPostSender(this);
-        jsonRPC = new JsonRPC();
         SwitchCaptionsNames = new String[3];
+        voiceResultInterpreter = new VoiceResultInterpreter();
 
         //InitBindingsAndListeners
         initViewBindings();
+
+        //Create VoiceRecognitionIntent
+        createVoiceRecognitionIntent();
 
         //Init Settings on first start
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -84,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements
 
         //Notify Change to Adapter
         switchAdapter.notifyDataSetChanged();
+
+        //Refresh the Settings regarding the VoiceResultInterpreter
+        voiceResultInterpreter.setPreferences(sharedPref);
 
         //Check Network availability
         checkNetworkStatus();
@@ -118,8 +120,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(View v) {
         startVoiceRecognitionActivity();
-        Snackbar.make(v, "Start Voice Recognition. Say your Commando.", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
     }
 
     @Override
@@ -132,48 +132,39 @@ public class MainActivity extends AppCompatActivity implements
     public void onCardButtonClick(View view, int wsID) {
         boolean btLightOn = (view.getId() == R.id.bt_light_on);
         //SendIt
-        sendJSONRPC(wsID, btLightOn);
+        sendJSONRPC(new WSCommand(wsID,btLightOn));
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //Check for Result from the VoiceRecognitionIntent and if the Result is valid
         if (requestCode == VOICE_RECOGNITION_REQUEST_CODE
                 && resultCode == RESULT_OK) {
+
+            //Extract Data
             ArrayList<String> matches = data
                     .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
-            String listString = "";
-            String wordStr;
-            String[] words;
-            for (String s : matches)
-            {
-                listString += s + "\t";
-                wordStr = matches.get(0);
-                words = wordStr.split(" ");
-                if (words.length > 1 && words[0].equals("Licht")) {
-                    if(words[1].equals("an")) {
-                        sendJSONRPC(3, true);
-                        break;
-                    }else if(words[1].equals("aus")){
-                        sendJSONRPC(3, false);
-                        break;
-                    }
-                }
-
+            //Analyse Data
+            WSCommand wsCommand = voiceResultInterpreter.analyseMatches(matches);
+            //Check for a valid Recognition
+            if(wsCommand.validVoiceRecognition){
+                sendJSONRPC(wsCommand);
+            }else{
+                setSnackbarText(getResources().getString(R.string.response_voice_error),
+                        R.color.red);
             }
-            Log.d("VoiceTest",listString);
-
         }
     }
 
     private void initViewBindings(){
         //RecyclerView
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
         // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         // specify an adapter (see also next example)
         switchAdapter = new SwitchAdapter(SwitchCaptionsNames);
@@ -188,47 +179,69 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void sendJSONRPC(int wsID, boolean powerState){
+    public void sendJSONRPC(WSCommand wsCommand){
         // Get Values
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String iAddress = "http://" + sharedPref.getString("pref_key_server_name", "") + ":"
                 + sharedPref.getString("pref_key_server_port", "") + "/jsonrpc";
-        //Prepare JsonRPC
-        jsonRPC.setWSParams(wsID, powerState);
         try {
             httpPostSender.createConnect(iAddress);
-            httpPostSender.sendPostData(jsonRPC);
+            httpPostSender.sendWSCommand(wsCommand);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void setResponseStatus(boolean statusOK) {
-        View v = findViewById(R.id.root_RelativeLayout);
+    public void setResponseStatus(WSCommand wsCommand) {
+        //If ok set Green and OK
+        String msg;
+        int rColor;
+        //Correcting the ID, Wireless Switches starts at 1
+        int correctID = wsCommand.wsID - 1;
+        String statusText = (wsCommand.powerState)?
+                getResources().getString(R.string.info_ws_status_on):
+                getResources().getString(R.string.info_ws_status_off);
+        if (wsCommand.sendingCommandSuccessful && wsCommand.jsonReturnOK()) {
+            msg = getResources().getString(R.string.response_status_ok);
+            rColor = R.color.green;
+        } else {
+            msg = getResources().getString(R.string.response_status_error);
+            rColor = R.color.red;
+        }
+        //Replacing the placeholder starting with #
+        msg = msg.replace("#ws_name",SwitchCaptionsNames[correctID])
+                .replace("#ws_status",statusText);
+        setSnackbarText(msg, rColor);
+    }
 
+    public void setSnackbarText(String msg, int rColor){
+        View v = findViewById(R.id.root_RelativeLayout);
         Snackbar sb = Snackbar.make(v, "ResponseStatusText Error", Snackbar.LENGTH_LONG)
                 .setAction("Action", null);
-        TextView textView = (TextView) sb.getView().findViewById(android.support.design.R.id.snackbar_text);
-
+        //Set Text
+        sb.setText(msg);
         //If ok set Green and OK
-        if (statusOK) {
-            sb.setText(getResources().getString(R.string.response_status_ok));
-            textView.setTextColor(ContextCompat.getColor(this, R.color.green));
-        } else {
-            sb.setText(getResources().getString(R.string.response_status_error));
-            textView.setTextColor(ContextCompat.getColor(this,R.color.red));
+        if(rColor != -1){
+            TextView textView = (TextView) sb.getView()
+                    .findViewById(android.support.design.R.id.snackbar_text);
+            textView.setTextColor(ContextCompat.getColor(this, rColor));
         }
         sb.show();
     }
 
-    private void startVoiceRecognitionActivity() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getClass()
-                .getPackage().getName());
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+    private void createVoiceRecognitionIntent(){
+        voiceRecognitionIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        voiceRecognitionIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
+                getClass().getPackage().getName());
+        voiceRecognitionIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 2);
-        startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+        voiceRecognitionIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 2);
+        voiceRecognitionIntent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+                R.string.info_voice_rec_start);
+    }
+
+    private void startVoiceRecognitionActivity() {
+        startActivityForResult(voiceRecognitionIntent, VOICE_RECOGNITION_REQUEST_CODE);
     }
 
     private void checkNetworkStatus(){
