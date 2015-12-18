@@ -24,7 +24,7 @@ public class MissingNetworkDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.warning_no_lan_title);
         builder.setMessage(R.string.warning_no_lan_msg);
-        builder.setPositiveButton(R.string.bt_ok, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.bt_wifi_is_on, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // Send the positive button event back to the host activity
                 mListener.onDialogPositiveClick(MissingNetworkDialogFragment.this);

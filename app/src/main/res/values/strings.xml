@@ -9,29 +9,29 @@
     <string name="response_voice_error">The Voice command could not be interpreted.</string>
     <string name="warning_no_lan_title">No Network-Connection</string>
     <string name="warning_no_lan_msg">Please enable your Network (wifi).\nThis App only works when Network ist activated.</string>
-    <string name="info_voice_rec_start">Say the wireless socket and the action (on/off)</string>
+    <string name="info_voice_rec_start">Say the wireless switch and the action (on/off)</string>
     <string name="info_ws_status_on">on</string>
     <string name="info_ws_status_off">off</string>
 
     <!-- Buttons and Captions Names -->
     <string name="action_voice_recognition">Voice Recognition</string>
     <string name="action_settings">Settings</string>
-    <string name="bt_ok">I have activate the Network</string>
+    <string name="bt_wifi_is_on">I have activate the Network</string>
     <string name="bt_on">On</string>
     <string name="bt_off">Off</string>
 
     <!-- Settings Names -->
     <string name="pref_server_title">Server-Settings</string>
     <string name="pref_server_name">ServerName (or IP)</string>
-    <string name="pref_server_name_default">openelec</string>
-    <string name="pref_server_port">Port</string>
-    <string name="pref_server_port_default">80</string>
+    <string name="pref_server_name_default" translatable="false">openelec</string>
+    <string name="pref_server_port" translatable="false">Port</string>
+    <string name="pref_server_port_default" translatable="false">80</string>
     <string name="pref_ws_title">Wireless Socket Names</string>
-    <string name="pref_ws1_name">Name for Wireless Socket 1</string>
-    <string name="pref_ws1_name_default">Wireless Socket 1</string>
-    <string name="pref_ws2_name">Name for Wireless Socket 2</string>
-    <string name="pref_ws2_name_default">Wireless Socket 2</string>
-    <string name="pref_ws3_name">Name for Wireless Socket 3</string>
-    <string name="pref_ws3_name_default">Wireless Socket 3</string>
+    <string name="pref_ws1_name">Wireless Switch 1</string>
+    <string name="pref_ws1_name_default">Wireless Switch 1</string>
+    <string name="pref_ws2_name">Wireless Switch 2</string>
+    <string name="pref_ws2_name_default">Wireless Switch 2</string>
+    <string name="pref_ws3_name">Wireless Switch 3</string>
+    <string name="pref_ws3_name_default">Wireless Switch 3</string>
 
 </resources>

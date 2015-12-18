@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wisor</string>
+    <string name="action_settings">Einstellungen</string>
+    <string name="bt_off">An</string>
+    <string name="bt_on">Aus</string>
+    <string name="bt_wifi_is_on">Ich habe das Netzwerk eingeschaltet</string>
+    <string name="info_voice_rec_start">Sagen sie die Funksteckdose und die Aktion (an/aus)</string>
+    <string name="info_ws_status_off">aus</string>
+    <string name="info_ws_status_on">an</string>
+    <string name="pref_server_name">ServerName (oder IP)</string>
+    <string name="pref_server_title">Server-Einstellungen</string>
+    <string name="action_voice_recognition">Spracherkennung</string>
+    <string name="pref_ws1_name">Funksteckdose 1</string>
+    <string name="pref_ws2_name">Funksteckdose 2</string>
+    <string name="pref_ws3_name">Funksteckdose 3</string>
+    <string name="pref_ws1_name_default">Funksteckdose 1</string>
+    <string name="pref_ws2_name_default">Funksteckdose 2</string>
+    <string name="pref_ws3_name_default">Funksteckdose 3</string>
+    <string name="pref_ws_title">Namen für die Funksteckdosen</string>
+    <string name="response_status_error">Ein Fehler ist beim Ändern der #ws_name nach #ws_status aufgetreten.</string>
+    <string name="response_status_ok">#ws_name ist jetzt #ws_status</string>
+    <string name="response_voice_error">Das Sprachkommando konnte nicht verstanden werden.</string>
+    <string name="title_activity_settings">Einstellungen</string>
+    <string name="warning_no_lan_msg">Bitte das Netzwerk (Wlan) aktivieren.\nDiese App funktioniert nur mit aktiviertem Netzwerk.</string>
+    <string name="warning_no_lan_title">Keine Netzwerkverbindung</string>
+</resources>

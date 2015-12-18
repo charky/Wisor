@@ -58,7 +58,9 @@ public class MainActivity extends AppCompatActivity implements
         //Init Objects
         httpPostSender = new HttpPostSender(this);
         SwitchCaptionsNames = new String[3];
-        voiceResultInterpreter = new VoiceResultInterpreter();
+        voiceResultInterpreter = new VoiceResultInterpreter(
+                getResources().getString(R.string.info_ws_status_on),
+                getResources().getString(R.string.info_ws_status_off));
 
         //InitBindingsAndListeners
         initViewBindings();
