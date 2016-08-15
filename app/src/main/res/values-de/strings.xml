@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">Wisor</string>
     <string name="action_settings">Einstellungen</string>
-    <string name="bt_off">An</string>
-    <string name="bt_on">Aus</string>
+    <string name="bt_off">Aus</string>
+    <string name="bt_on">An</string>
     <string name="bt_wifi_is_on">Ich habe das Netzwerk eingeschaltet</string>
     <string name="info_voice_rec_start">Sagen sie die Funksteckdose und die Aktion (an/aus)</string>
     <string name="info_ws_status_off">aus</string>

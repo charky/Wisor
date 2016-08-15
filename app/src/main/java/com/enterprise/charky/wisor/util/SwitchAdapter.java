@@ -1,5 +1,6 @@
 package com.enterprise.charky.wisor.util;
 
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,17 +15,20 @@ import com.enterprise.charky.wisor.R;
  * Adapter for Interpreting an simple String-Array
  * and Handling On and Off Action by one button each
  */
-public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder> implements View.OnClickListener {
+public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder> implements View
+        .OnClickListener, View.OnLongClickListener {
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView wsCaption;
         Button btOn;
         Button btOff;
+        CardView cv;
         public ViewHolder(View itemView) {
             super(itemView);
             wsCaption = (TextView)itemView.findViewById(R.id.ws_label);
             btOn = (Button)itemView.findViewById(R.id.bt_light_on);
             btOff = (Button)itemView.findViewById(R.id.bt_light_off);
+            cv = (CardView) itemView.findViewById(R.id.cv);
         }
     }
 
@@ -48,6 +52,7 @@ public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder
         holder.btOn.setOnClickListener(this);
         holder.btOff.setTag(position);
         holder.btOff.setOnClickListener(this);
+        holder.cv.setOnLongClickListener(this);
     }
 
     @Override
@@ -57,6 +62,11 @@ public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder
         if(cardButtonListener != null){
             cardButtonListener.onCardButtonClick(v,wsID);
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        return true;
     }
 
     @Override
