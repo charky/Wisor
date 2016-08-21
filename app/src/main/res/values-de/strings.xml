@@ -24,4 +24,7 @@
     <string name="title_activity_settings">Einstellungen</string>
     <string name="warning_no_lan_msg">Bitte das Netzwerk (Wlan) aktivieren.\nDiese App funktioniert nur mit aktiviertem Netzwerk.</string>
     <string name="warning_no_lan_title">Keine Netzwerkverbindung</string>
+    <string name="dialog_ok">Ok</string>
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="dialog_inputHint">Text hier eingeben ...</string>
 </resources>

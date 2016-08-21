@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.enterprise.charky.wisor.util.HttpPostSender;
+import com.enterprise.charky.wisor.util.InputDialogFragment;
 import com.enterprise.charky.wisor.util.MissingNetworkDialogFragment;
 import com.enterprise.charky.wisor.util.SwitchAdapter;
 import com.enterprise.charky.wisor.util.VoiceResultInterpreter;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements
         View.OnClickListener,
         MissingNetworkDialogFragment.MissingNetworkDialogListener,
+        InputDialogFragment.InputDialogListener,
         SwitchAdapter.CardButtonListener{
 
     //Finals
@@ -125,16 +127,53 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
+    public void onMNDialogPositiveClick(DialogFragment dialog) {
         //Cycle until Network is activated
         checkNetworkStatus();
     }
 
     @Override
+    public void onInputDialogPositiveClick(Bundle dialogBundle) {
+        SharedPreferences.Editor sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
+                .edit();
+        int id = dialogBundle.getInt("wsID");
+        String wsName = dialogBundle.getString("editText");
+        SwitchCaptionsNames[id] = wsName;
+        sharedPref.putString("pref_key_ws"+(id+1)+"_name",wsName);
+        sharedPref.apply();
+
+        //Notify Change to Adapter
+        switchAdapter.notifyDataSetChanged();
+
+        //Refresh the Settings regarding the VoiceResultInterpreter
+        voiceResultInterpreter.setPreferences(PreferenceManager.getDefaultSharedPreferences(this));
+    }
+
+    @Override
     public void onCardButtonClick(View view, int wsID) {
         boolean btLightOn = (view.getId() == R.id.bt_light_on);
-        //SendIt
-        sendJSONRPC(new WSCommand(wsID,btLightOn));
+        //SendIt before Correct wsID; Starts at 0 but WS starts at 1
+        sendJSONRPC(new WSCommand(( wsID + 1 ),btLightOn));
+    }
+
+
+    @Override
+    public void onCardViewLongClick(View view, int wsID) {
+        InputDialogFragment inputDialogFragment = new InputDialogFragment();
+        Bundle args = new Bundle();
+        //Determine correct Caption
+        int idStringForWSName = R.string.pref_ws1_name;
+        if(wsID == 1){
+            idStringForWSName = R.string.pref_ws2_name;
+        }else if(wsID == 2){
+            idStringForWSName = R.string.pref_ws3_name;
+        }
+        args.putInt("wsID",wsID);
+        args.putString("titleCaption", getString(R.string.pref_ws_name_for) + " " + getString
+                (idStringForWSName));
+        args.putString("editText", SwitchCaptionsNames[wsID]);
+        inputDialogFragment.setArguments(args);
+        inputDialogFragment.show(getFragmentManager(),"inputPromptWSName");
     }
 
     @Override

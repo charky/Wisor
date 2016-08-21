@@ -17,6 +17,7 @@ import com.enterprise.charky.wisor.R;
  */
 public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder> implements View
         .OnClickListener, View.OnLongClickListener {
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView wsCaption;
@@ -28,12 +29,13 @@ public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder
             wsCaption = (TextView)itemView.findViewById(R.id.ws_label);
             btOn = (Button)itemView.findViewById(R.id.bt_light_on);
             btOff = (Button)itemView.findViewById(R.id.bt_light_off);
-            cv = (CardView) itemView.findViewById(R.id.cv);
+            cv = (CardView) itemView.findViewById(R.id.ws_cardView);
         }
     }
 
     private String[] switchesNames;
     private CardButtonListener cardButtonListener;
+    private View clickedView;
 
     public SwitchAdapter(String[] switchesNames){
         this.switchesNames = switchesNames;
@@ -53,12 +55,12 @@ public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder
         holder.btOff.setTag(position);
         holder.btOff.setOnClickListener(this);
         holder.cv.setOnLongClickListener(this);
+        holder.cv.setTag(position);
     }
 
     @Override
     public void onClick(View v) {
-        //Handle position starts at 0 but Wireless Switches starts at 1
-        int wsID = ((int) v.getTag()) + 1;
+        int wsID = ((int) v.getTag());
         if(cardButtonListener != null){
             cardButtonListener.onCardButtonClick(v,wsID);
         }
@@ -66,6 +68,10 @@ public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder
 
     @Override
     public boolean onLongClick(View v) {
+        int wsID = ((int) v.getTag());
+        if(cardButtonListener != null){
+            cardButtonListener.onCardViewLongClick(v,wsID);
+        }
         return true;
     }
 
@@ -88,6 +94,7 @@ public class SwitchAdapter extends RecyclerView.Adapter<SwitchAdapter.ViewHolder
 
     public interface CardButtonListener {
         void onCardButtonClick(View view, int wsID);
+        void onCardViewLongClick(View view, int wsID);
     }
 
 }

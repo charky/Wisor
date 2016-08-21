@@ -27,11 +27,17 @@
     <string name="pref_server_port" translatable="false">Port</string>
     <string name="pref_server_port_default" translatable="false">80</string>
     <string name="pref_ws_title">Wireless Socket Names</string>
+    <string name="pref_ws_name_for">Name for</string>
     <string name="pref_ws1_name">Wireless Switch 1</string>
     <string name="pref_ws1_name_default">Wireless Switch 1</string>
     <string name="pref_ws2_name">Wireless Switch 2</string>
     <string name="pref_ws2_name_default">Wireless Switch 2</string>
     <string name="pref_ws3_name">Wireless Switch 3</string>
     <string name="pref_ws3_name_default">Wireless Switch 3</string>
+
+    <!--Dialog Strings -->
+    <string name="dialog_ok">Ok</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_inputHint">Enter  text here ...</string>
 
 </resources>
